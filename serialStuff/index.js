@@ -11,6 +11,8 @@ port.open(function (err) {
       return console.log('Error opening port: ', err.message);
     }
 });
+
+
 //app.use(cors());
 
 app.use(bodyParser.json());
@@ -21,7 +23,7 @@ var jsonData = {
 
 app.post('/', function(request, response){
   console.log(request.body);      // your JSON
-  jsonData.user = request.body.user;
+  jsonData.user = parseInt(request.body.user);
    response.send( ( verify() ) ? '1' : '0' );    // echo the result back
 });
 
@@ -37,18 +39,24 @@ function verify() {
         //serial code
         var byteToSend = 0xc0;
         byteToSend = byteToSend | jsonData.user;
+        
         port.write(byteToSend, function( error ) {
             if(error) {
                 console.log(error);
             }
         });
+        port.on('data', (data) => {
+            
+            console.log(data.toString());
+          });
+
         var verified = port.read();
         
-        if(verified.find('1')) {
-            return true;
-        }
-        else {
+        if(verified.find('1') === null) {
             return false;
+        }
+        else{
+            return true;
         }
     }
 };
